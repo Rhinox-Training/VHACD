@@ -10,6 +10,8 @@ using Sirenix.OdinInspector;
 #endif
 using Rhinox.GUIUtils.Attributes;
 using Rhinox.GUIUtils;
+using Rhinox.Lightspeed;
+using Sirenix.OdinInspector;
 
 #if UNITY_EDITOR && ODIN_INSPECTOR
 using Sirenix.Utilities.Editor;
