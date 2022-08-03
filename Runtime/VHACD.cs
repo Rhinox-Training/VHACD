@@ -8,6 +8,8 @@ using UnityEngine;
 using Sirenix.Utilities;
 using Sirenix.OdinInspector;
 #endif
+using Rhinox.GUIUtils.Attributes;
+using Rhinox.GUIUtils;
 
 #if UNITY_EDITOR && ODIN_INSPECTOR
 using Sirenix.Utilities.Editor;
