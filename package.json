@@ -1,6 +1,6 @@
 {
   "name": "com.rhinox.open.robotics.vhacd",
-  "version": "0.0.2-preview",
+  "version": "0.0.3-preview",
   "displayName": "VHACD - Unity Fork",
   "description": "Mesh decomposition algorithm forked from Unity repo (which was forked from V-HACD)",
   "unity": "2020.3",
