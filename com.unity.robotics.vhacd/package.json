@@ -4,5 +4,8 @@
   "displayName": "VHACD - Unity Fork",
   "description": "Mesh decomposition algorithm forked from Unity repo (which was forked from V-HACD)",
   "unity": "2020.3",
-  "author": "Rhinox"
+  "author": "Rhinox",
+  "dependencies": {
+		"com.rhinox.open.guiutils": "1.5.1"
+  }
 }
