@@ -12,6 +12,7 @@ using Rhinox.GUIUtils.Attributes;
 using Rhinox.GUIUtils;
 using Rhinox.Lightspeed;
 using Sirenix.OdinInspector;
+using UnityEditor;
 
 #if UNITY_EDITOR && ODIN_INSPECTOR
 using Sirenix.Utilities.Editor;
@@ -147,7 +148,6 @@ namespace MeshProcess
             m_parameters.Init();
         }
 
-		[ContextMenu("Generate Convex Meshes")]
         private unsafe void GenerateVHACD(Mesh mesh, out void* vhacd, out uint numHulls)
         {
             vhacd = CreateVHACD();
@@ -168,6 +168,7 @@ namespace MeshProcess
             numHulls = GetNConvexHulls(vhacd);
         }
 
+        [ContextMenu("Clear Generated Colliders")]
         private void ClearColliders()
         {
             if (!_generatedColliders.IsNullOrEmpty())
@@ -220,7 +221,7 @@ namespace MeshProcess
             return convexMesh;
         }
 
-#if UNITY_EDITOR && ODIN_INSPECTOR
+#if UNITY_EDITOR
 
         private const string GEN_NAME = "[Generated] VHACD";
         private unsafe struct VHACD_Info
@@ -243,63 +244,60 @@ namespace MeshProcess
 
         }
 
-        [OnInspectorGUI, PropertyOrder(-1)]
-        private unsafe void OnInspectorGui()
+
+        [ContextMenu("Generate VHACD")]
+        private unsafe void GenerateVHACDCollision()
         {
             var meshFilters = GetComponentsInChildren<MeshFilter>(true);
             if (!meshFilters.Any())
             {
-                SirenixEditorGUI.InfoMessageBox("You need a meshfilter(s) to generate a v-vacd collider.");
+                Debug.LogWarning("You need a meshfilter(s) to generate a v-vacd collider.");
                 return;
             }
 
-            if (GUILayout.Button("Generate Collider"))
+            List<VHACD_Info> infos = new List<VHACD_Info>();
+            foreach (var meshFilter in meshFilters)
             {
-                List<VHACD_Info> infos = new List<VHACD_Info>();
-                foreach (var meshFilter in meshFilters)
+                var mesh = meshFilter.sharedMesh;
+                if (mesh)
                 {
-                    var mesh = meshFilter.sharedMesh;
-                    if (mesh)
+                    GenerateVHACD(meshFilter.sharedMesh, out var vhacd, out var numHulls);
+                    infos.Add(new VHACD_Info
                     {
-                        GenerateVHACD(meshFilter.sharedMesh, out var vhacd, out var numHulls);
-                        infos.Add(new VHACD_Info
-                        {
-                            MeshFilter = meshFilter,
-                            NumHulls = (int) numHulls,
-                            VHACD = vhacd
-                        });
-                    }
+                        MeshFilter = meshFilter,
+                        NumHulls = (int) numHulls,
+                        VHACD = vhacd
+                    });
                 }
+            }
 
-                var totalMeshes = infos.Sum(x => x.NumHulls);
+            var totalMeshes = infos.Sum(x => x.NumHulls);
 
-                if (totalMeshes > 10)
+            if (totalMeshes > 10)
+            {
+                var cont = EditorUtility.DisplayDialog(
+                    "Lots of meshes",
+                    $"A total of {totalMeshes} colliders will be generated. Are you sure you wish to continue?",
+                    "Yes", "No");
+
+                if (!cont) return;
+            }
+
+            ClearColliders();
+
+            foreach (var info in infos)
+            {
+                var root = info.GetOrCreateRoot();
+                var meshes = GenerateConvexMeshes(info.VHACD, info.NumHulls);
+
+                foreach (var mesh in meshes)
                 {
-                    var cont = EditorUtility.DisplayDialog(
-                        "Lots of meshes",
-                        $"A total of {totalMeshes} colliders will be generated. Are you sure you wish to continue?",
-                        "Yes", "No");
+                    var collider = root.gameObject.AddComponent<MeshCollider>();
+                    collider.sharedMesh = mesh;
+                    collider.convex = true;
 
-                    if (!cont) return;
+                    _generatedColliders.Add(collider);
                 }
-
-                ClearColliders();
-
-                foreach (var info in infos)
-                {
-                    var root = info.GetOrCreateRoot();
-                    var meshes = GenerateConvexMeshes(info.VHACD, info.NumHulls);
-
-                    foreach (var mesh in meshes)
-                    {
-                        var collider = root.gameObject.AddComponent<MeshCollider>();
-                        collider.sharedMesh = mesh;
-                        collider.convex = true;
-
-                        _generatedColliders.Add(collider);
-                    }
-                }
-
             }
         }
 #endif
