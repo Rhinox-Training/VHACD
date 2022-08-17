@@ -221,7 +221,49 @@ namespace MeshProcess
             return convexMesh;
         }
 
-#if UNITY_EDITOR
+        public unsafe void GenerateVHACDScript()
+        {
+            var meshFilters = GetComponentsInChildren<MeshFilter>(true);
+            if (!meshFilters.Any())
+            {
+                Debug.LogWarning("You need a meshfilter(s) to generate a v-vacd collider.");
+                return;
+            }
+
+            List<VHACD_Info> infos = new List<VHACD_Info>();
+            foreach (var meshFilter in meshFilters)
+            {
+                var mesh = meshFilter.sharedMesh;
+                if (mesh && mesh.isReadable)
+                {
+                    GenerateVHACD(meshFilter.sharedMesh, out var vhacd, out var numHulls);
+                    infos.Add(new VHACD_Info
+                    {
+                        MeshFilter = meshFilter,
+                        NumHulls = (int) numHulls,
+                        VHACD = vhacd
+                    });
+                }
+            }
+
+            ClearColliders();
+
+            foreach (var info in infos)
+            {
+                var root = info.GetOrCreateRoot();
+                var meshes = GenerateConvexMeshes(info.VHACD, info.NumHulls);
+
+                foreach (var mesh in meshes)
+                {
+                    var collider = root.gameObject.AddComponent<MeshCollider>();
+                    collider.sharedMesh = mesh;
+                    collider.convex = true;
+
+                    _generatedColliders.Add(collider);
+                }
+            }
+        }
+
 
         private const string GEN_NAME = "[Generated] VHACD";
         private unsafe struct VHACD_Info
@@ -245,6 +287,7 @@ namespace MeshProcess
         }
 
 
+#if UNITY_EDITOR
         [ContextMenu("Generate VHACD")]
         private unsafe void GenerateVHACDCollision()
         {
