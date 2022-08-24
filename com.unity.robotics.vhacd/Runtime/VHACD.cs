@@ -27,6 +27,8 @@ namespace MeshProcess
         [InlineButton(nameof(ClearColliders), "Clear")]
         [SerializeField]
         private List<MeshCollider> _generatedColliders;
+        
+        public IList<MeshCollider> GeneratedColliders => _generatedColliders ?? Array.Empty<MeshCollider>();
 
         [Title("Parameters"), InlineProperty, HideLabel]
         [System.Serializable]
