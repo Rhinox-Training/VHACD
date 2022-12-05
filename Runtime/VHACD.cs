@@ -239,13 +239,20 @@ namespace MeshProcess
                 var mesh = meshFilter.sharedMesh;
                 if (mesh && mesh.isReadable)
                 {
-                    GenerateVHACD(meshFilter.sharedMesh, out var vhacd, out var numHulls);
-                    infos.Add(new VHACD_Info
+                    if (mesh.bounds.size.x > 0.0f && mesh.bounds.size.y > 0.0f && mesh.bounds.size.z > 0.0f)
+                    {                        
+                        GenerateVHACD(meshFilter.sharedMesh, out var vhacd, out var numHulls);
+                        infos.Add(new VHACD_Info
+                        {
+                            MeshFilter = meshFilter,
+                            NumHulls = (int) numHulls,
+                            VHACD = vhacd
+                        });
+                    }
+                    else
                     {
-                        MeshFilter = meshFilter,
-                        NumHulls = (int) numHulls,
-                        VHACD = vhacd
-                    });
+                        Debug.LogWarning("Can't calculate VHACD on mesh with a dimensions of size 0");
+                    }
                 }
             }
 
