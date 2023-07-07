@@ -3,6 +3,9 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE.md)
 ![Unity](https://img.shields.io/badge/unity-2020.2+-brightgreen)
 
+NOTE:
+DEPRECATED - We've moved to a [newer version of vhacd](https://github.com/Rhinox-Training/v-hacd-dll)
+
 ---
 
 We're currently working on lots of things! Please take a short moment fill out our [survey](https://unitysoftware.co1.qualtrics.com/jfe/form/SV_0ojVkDVW0nNrHkW) to help us identify what products and packages to build next.
